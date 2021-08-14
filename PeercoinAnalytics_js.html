@@ -14,23 +14,22 @@
 				<h3>What Can Peercoin Analytics Do For You?</h3>
 				<div class="col-lg-6 mx-auto">
 						<p class="lead mb-4">Use 'Browse', then Import, then Process, then Plot, in that order.</p>
+						<div>
+                                                        <span>Select a .csv file</span>
+                                                        <input type="file" id="fileInput" >
+                                                </div>
+						<br>
 						<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
 							<button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="impdata()">Import Data</button>
 							<button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="procdata()">Process Data</button>
 							<button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="plotdata()">Plot Data</button>
 						</div>
-						<br>
-						<div>
-							<span>Select a .csv file</span>
-							<input type="file" id="fileInput" >
-						</div>
 				</div>
-
+			</div>	
 				<pre id="fileDisplayArea"><pre>
 				<div id="page-wrapper"></div>
-				</div>
-
-			<div id='myDiv'></div>
+			<h3>Graph of Balance Over Time</h3>
+			<div id="myDiv" class="graph"></div>
 		</div>
 		<script src="script.js"></script>
 	</body>
