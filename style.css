@@ -1,0 +1,18 @@
+.peercoin__logo {
+    margin-bottom:50px;
+}
+
+.h1, .h3, div {
+    padding:8px;
+}
+
+<style type="text/css">
+.idontknowwhythisishere{}
+
+.graph {
+	padding:0px;height:500px;width:100%;	
+	float:left;
+	background-color:#4852B7;
+}
+
+</style>
