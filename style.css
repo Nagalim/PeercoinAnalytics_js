@@ -6,13 +6,26 @@
     padding:8px;
 }
 
-<style type="text/css">
-.idontknowwhythisishere{}
-
-.graph {
-	padding:0px;height:500px;width:100%;	
-	float:left;
-	background-color:#4852B7;
+input[type="file"] {
+	display: none;
+}
+.custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    cursor: pointer;
 }
 
-</style>
+.filetext {
+	display:inline-block;
+	height:45px;width:200px;
+	border:1px solid rgb(0, 0, 0);
+	overflow:hidden;
+	vertical-align: bottom;
+}
+
+.graph {
+	display:flex;
+	padding:0px;height:500px;width:100%;
+	background-color:#0af852;
+}
+

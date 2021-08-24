@@ -2,62 +2,71 @@
 var rawdata = null;
 var resdata = [];
 
+document.getElementById('fileInput').onchange = function () {
+	try{
+		let filetext = this.value.replace("C:\\fakepath\\", "");
+		alert(filetext);
+		document.getElementById('filearea').innerHTML=filetext;
+	}catch(err){alert(err)};
+}
+
 //Import the transaction export csv.  Works with standard wallet exports, made for Peercoin but works with Bitcoin.
 function impdata()
 {
   	try{
-        	var reader = new FileReader();	
-        	reader.onload = function (e) {rawdata = e.target.result};
-        	reader.readAsText(document.getElementById('fileInput').files[0]);
-        	alert("Data Imported");
-        }
-        catch(err){alert(err);}
+        var reader = new FileReader();	
+        reader.onload = function (e) {rawdata = e.target.result};
+		reader.onloadend = function () {procdata()};
+        reader.readAsText(document.getElementById('fileInput').files[0]);
+//		document.getElementById('filearea').innerHTML="hi";
+    }
+    catch(err){alert(err);}
 }
 
 //Make plotting easier through Plotly
 function plotdata(eggs, why, grapharea)
 {
-        var trace = {
-                x: eggs,
-                y: why,
-                mode: 'lines+markers',
-                type: 'scatter'
-        };
-        var data = [trace];
-        try{Plotly.newPlot(grapharea, data);}
-        catch(err){Alert(err)}
+    var trace = {
+        x: eggs,
+        y: why,
+        mode: 'lines+markers',
+        type: 'scatter'
+    };
+    var data = [trace];
+    try{Plotly.newPlot(grapharea, data);}
+    catch(err){Alert(err)}
 }
 
 //Process the data.  This will recreate the resdata.
 //It also feeds the wallet [date,balance] out to the plotter
 function procdata()
 {
-        resdata = [];
+    resdata = [];
 	var txndate = [], txnamount = [];
 	var rows = rawdata.split("\n");
-        var dated = [], amnt = [], tag = [], addr = [];
-        for (var i=1;i<rows.length-1;i++){
-        	let thisrow = rows[i].split('","');
-        	let dating = Date.parse(thisrow[1]);
-        	dated.push(dating);
-        	amnt.push(thisrow[5]);
+    var dated = [], amnt = [], tag = [], addr = [];
+    for (var i=1;i<rows.length-1;i++){
+        let thisrow = rows[i].split('","');
+        let dating = Date.parse(thisrow[1]);
+        dated.push(dating);
+        amnt.push(thisrow[5]);
 		tag.push(thisrow[2]);
 		addr.push(thisrow[4]);
-        }
+    }
 	var j = -1, k = -1, AmtTot = 0;
-        while(dated[++j]){
+    while(dated[++j]){
 		resdata.push([dated[j],amnt[j],tag[j],addr[j]]);
-        }
+    }
 	resdata.sort(function(a,b) {return a[0]-b[0]});
 	while(resdata[++k]){
 		dater=resdata[k][0].toString();
-                let readate = new Date(resdata[k][0]);
-        	AmtTot = AmtTot + parseFloat(resdata[k][1]);
+        let readate = new Date(resdata[k][0]);
+        AmtTot = AmtTot + parseFloat(resdata[k][1]);
 		resdata[k].push(readate);
 		resdata[k].push(AmtTot);
 		txndate.push(readate);
-        	txnamount.push(AmtTot);
-        }
+        txnamount.push(AmtTot);
+    }
 	plotdata(txndate,txnamount,areaone);
 	document.getElementById('windowstart').value=resdata[0][4].toISOString().substring(0,10);
 	alert("Processed and Graphed");
@@ -70,13 +79,13 @@ function calcintrst(mindate,maxdate)
         while(resdata[++i]){
                 if (resdata[i][0]>mindate && resdata[i][0]<maxdate) {
                         if (onswitch == 0 && i!=0) {
-                                avg = avg + resdata[i-1][5]*(resdata[i][0]-mindate);
+                            avg = avg + resdata[i-1][5]*(resdata[i][0]-mindate);
                         } else {
-                                if (i+1==len || resdata[i+1][5]>maxdate) {
-                                        avg = avg + resdata[i][5]*(maxdate-resdata[i][0]);
-                                } else {
-                                        avg = avg + resdata[i][5]*(resdata[i+1][0]-resdata[i][0]);
-                                }
+                            if (i+1==len || resdata[i+1][5]>maxdate) {
+                                avg = avg + resdata[i][5]*(maxdate-resdata[i][0]);
+                            } else {
+                                avg = avg + resdata[i][5]*(resdata[i+1][0]-resdata[i][0]);
+                            }
                         }
                         if (resdata[i][2] == "Mint by stake")
                         {
@@ -89,6 +98,26 @@ function calcintrst(mindate,maxdate)
 	return[avg, reward, interest];
 }
 
+//Set the bar for Continuous Minting as earning 0.75% average interest before v0.9 and 4.125% after.
+function expavgint(min,max)
+{
+	var cnfbar = 0.75;
+	var switchdate = new Date("2020-06-05T01:00:00Z");
+	var binter = 1;
+	var ainter = 5.5;
+	var astart  = 0;
+	var tintage = 0;
+	if (min<switchdate){
+		tintage = tintage+binter*(switchdate-min);
+		astart = switchdate;
+	} else {astart = min;}
+	if (switchdate<max){
+		tintage = tintage+ainter*(max-astart);
+	} else {tintage = tintage+binter*(max-astart);}
+	var tinter = cnfbar*tintage/(max-min);
+	return tinter;
+}
+
 //Use the date window to spit out averages.
 function datedata()
 {
@@ -99,7 +128,7 @@ function datedata()
 	document.getElementById('avg').innerHTML=avgint[0]/(maxd-mind);
 	document.getElementById('stake').innerHTML=avgint[1];
 	document.getElementById('interest').innerHTML=avgint[2];
-	if (avgint[2] > 3.25){
+	if (avgint[2] > expavgint(mind,maxd)){
 		document.getElementById('prediction').innerHTML="You were a CONTINUOUS minter during this period";
 	} else {
 		document.getElementById('prediction').innerHTML="You were a PERIODIC minter during this period";
