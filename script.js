@@ -14,62 +14,90 @@ document.getElementById('fileInput').onchange = function () {
 function impdata()
 {
   	try{
-        var reader = new FileReader();	
-        reader.onload = function (e) {rawdata = e.target.result};
+        	var reader = new FileReader();
+        	reader.onload = function (e) {rawdata = e.target.result};
 		reader.onloadend = function () {procdata()};
-        reader.readAsText(document.getElementById('fileInput').files[0]);
-//		document.getElementById('filearea').innerHTML="hi";
-    }
-    catch(err){alert(err);}
+        	reader.readAsText(document.getElementById('fileInput').files[0]);
+    	}
+    	catch(err){alert(err);}
 }
 
 //Make plotting easier through Plotly
 function plotdata(eggs, why, grapharea)
 {
-    var trace = {
-        x: eggs,
-        y: why,
-        mode: 'lines+markers',
-        type: 'scatter'
-    };
-    var data = [trace];
-    try{Plotly.newPlot(grapharea, data);}
-    catch(err){Alert(err)}
+    	var trace = {
+        	x: eggs,
+        	y: why,
+        	mode: 'lines+markers',
+        	type: 'scatter'
+    	};
+    	var data = [trace];
+    	try{Plotly.newPlot(grapharea, data);}
+    	catch(err){Alert(err)};
 }
 
 //Process the data.  This will recreate the resdata.
 //It also feeds the wallet [date,balance] out to the plotter
-function procdata()
+function procdata(targetaddr = "no")
 {
-    resdata = [];
+	resdata = [];
 	var txndate = [], txnamount = [];
 	var rows = rawdata.split("\n");
-    var dated = [], amnt = [], tag = [], addr = [];
-    for (var i=1;i<rows.length-1;i++){
-        let thisrow = rows[i].split('","');
-        let dating = Date.parse(thisrow[1]);
-        dated.push(dating);
-        amnt.push(thisrow[5]);
+    	var dated = [], amnt = [], tag = [], addr = [];
+    	for (var i=1;i<rows.length-1;i++){
+        	let thisrow = rows[i].split('","');
+        	let dating = Date.parse(thisrow[1]);
+        	dated.push(dating);
+        	amnt.push(thisrow[5]);
 		tag.push(thisrow[2]);
 		addr.push(thisrow[4]);
-    }
+    	}
 	var j = -1, k = -1, AmtTot = 0;
-    while(dated[++j]){
-		resdata.push([dated[j],amnt[j],tag[j],addr[j]]);
-    }
+    	while(dated[++j]){
+		if (targetaddr==addr[j] || targetaddr=="no"){
+			resdata.push([dated[j],amnt[j],tag[j],addr[j]]);
+    		}
+	}
 	resdata.sort(function(a,b) {return a[0]-b[0]});
 	while(resdata[++k]){
 		dater=resdata[k][0].toString();
-        let readate = new Date(resdata[k][0]);
-        AmtTot = AmtTot + parseFloat(resdata[k][1]);
+        	let readate = new Date(resdata[k][0]);
+        	AmtTot = AmtTot + parseFloat(resdata[k][1]);
 		resdata[k].push(readate);
 		resdata[k].push(AmtTot);
 		txndate.push(readate);
-        txnamount.push(AmtTot);
-    }
+        	txnamount.push(AmtTot);
+    	}
+	//Plot and date ranges
 	plotdata(txndate,txnamount,areaone);
 	document.getElementById('windowstart').value=resdata[0][4].toISOString().substring(0,10);
+	endindex = resdata.length-1;
+	document.getElementById('windowend').value=resdata[endindex][4].toISOString().substring(0,10);
+	//Setup address select if unpopulated
+	popaddr=document.getElementById('addressarea').length;
+	if (popaddr == 1){
+		var select = document.getElementById('addressarea'), usedaddr = [];
+		var ii=-1; jj=-1;
+		while(addr[++jj]){
+			if (!(usedaddr.includes(addr[jj]))){
+				usedaddr.push(addr[jj]);
+			}
+		}
+		while(usedaddr[++ii]){
+			var address = usedaddr[ii];
+			var addresses = document.createElement("option");
+			addresses.textContent = address;
+			addresses.value = address;
+			select.appendChild(addresses);
+		}
+	}
 	alert("Processed and Graphed");
+}
+
+function impaddr()
+{
+	selectaddr = document.getElementById('addressarea').value;
+	procdata(selectaddr);
 }
 
 //Calculate annualized interest and other things based on a given date window.
@@ -104,7 +132,7 @@ function expavgint(min,max)
 	var cnfbar = 0.75;
 	var switchdate = new Date("2020-06-05T01:00:00Z");
 	var binter = 1;
-	var ainter = 5.5;
+	var ainter = 5;
 	var astart  = 0;
 	var tintage = 0;
 	if (min<switchdate){
