@@ -26,10 +26,10 @@
 					</div>	
 					<div>
 						<select id="addressarea">
-							<option value="no">All Addresses (imported by default)</option>
+							<option value="All">All Addresses (imported by default)</option>
 						</select>
 						<button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="impaddr()">Select Address</button>
-					</div>
+					</div> 
 					<label for="start">Start date:</label>
         	            		<input type="date" id="windowstart" name="windowstart" value="2012-08-19" min="2012-08-15"></input>
         	            		<label for="end">End date:</label>
@@ -37,6 +37,9 @@
 					<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
 						<button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="datedata()">Process Date Window</button>
 					</div>
+					<span class="lead mb-4"> Analysis for Address: </span>
+                                        <span id="trgtaddr" class="lead mb-4"> Not loaded </span>
+					<br>
 					<span class="lead mb-4"> Average Peercoin Balance: </span>
 					<span id="avg" class="lead mb-4"> # PPC </span>
 					<br>

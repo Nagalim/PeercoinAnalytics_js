@@ -38,7 +38,7 @@ function plotdata(eggs, why, grapharea)
 
 //Process the data.  This will recreate the resdata.
 //It also feeds the wallet [date,balance] out to the plotter
-function procdata(targetaddr = "no")
+function procdata(targetaddr = "All")
 {
 	resdata = [];
 	var txndate = [], txnamount = [];
@@ -54,7 +54,7 @@ function procdata(targetaddr = "no")
     	}
 	var j = -1, k = -1, AmtTot = 0;
     	while(dated[++j]){
-		if (targetaddr==addr[j] || targetaddr=="no"){
+		if (targetaddr==addr[j] || targetaddr=="All"){
 			resdata.push([dated[j],amnt[j],tag[j],addr[j]]);
     		}
 	}
@@ -91,6 +91,7 @@ function procdata(targetaddr = "no")
 			select.appendChild(addresses);
 		}
 	}
+	document.getElementById('trgtaddr').innerHTML=targetaddr;
 	alert("Processed and Graphed");
 }
 
