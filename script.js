@@ -209,7 +209,6 @@ function datedata()
 	} else {
 		document.getElementById('prediction').innerHTML="You were a PERIODIC minter during this period";
 	}
-	alert(oneyear);
 	for (let i=mind;i<maxd; i=i+oneday){
 		let annualized = calcintrst(i-oneyear,i);
 		let day = new Date(i);
