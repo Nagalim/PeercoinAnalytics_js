@@ -1,12 +1,17 @@
 //Resdata is the array of processed values with length equal to the number of transactions.
 var rawdata = null;
 var resdata = [];
+//365 days, 24 hours, 3600 seconds, 1000 milliseconds
+let oneyear = 365*24*3600*1000;
+let oneday = 24*3600*1000;
 
 document.getElementById('fileInput').onchange = function () {
 	try{
 		let filetext = this.value.replace("C:\\fakepath\\", "");
 		alert(filetext);
 		document.getElementById('filearea').innerHTML=filetext;
+		document.getElementById('selfilebtn').style.background='#008000';
+		document.getElementById('impdatabtn').style.background='#FF0000';
 	}catch(err){alert(err)};
 }
 
@@ -18,6 +23,8 @@ function impdata()
         	reader.onload = function (e) {rawdata = e.target.result};
 		reader.onloadend = function () {procdata()};
         	reader.readAsText(document.getElementById('fileInput').files[0]);
+		document.getElementById('impdatabtn').style.background='#008000';
+		document.getElementById('datebtn').style.background='#FF0000';
     	}
     	catch(err){alert(err);}
 }
@@ -36,7 +43,22 @@ function plotdata(eggs, why, grapharea)
     	catch(err){Alert(err)};
 }
 
+function scatterplotdata(eggs, why, grapharea)
+{
+        var trace = {
+                x: eggs,
+                y: why,
+                mode: 'markers',
+                type: 'scatter'
+        };
+        var data = [trace];
+        try{Plotly.newPlot(grapharea, data);}
+        catch(err){Alert(err)};
+}
+
+
 //Process the data.  This will recreate the resdata.
+//resdata = [date, amount, txntag, address, readable date, balance]
 //It also feeds the wallet [date,balance] out to the plotter
 function procdata(targetaddr = "All")
 {
@@ -98,22 +120,24 @@ function procdata(targetaddr = "All")
 function impaddr()
 {
 	selectaddr = document.getElementById('addressarea').value;
+	document.getElementById('impaddrbtn').style.background='#008000';
+        document.getElementById('datebtn').style.background='#FF0000';
 	procdata(selectaddr);
 }
 
-//Calculate annualized interest and other things based on a given date window.
+//Calculate average balance, stake minted, annualized interest over date window, and total reward as percentage of balance.
 function calcintrst(mindate,maxdate)
 {
-	var avg = 0, reward = 0, len=resdata.length, onswitch = 1, i=-1;
+	var sum = 0, reward = 0, len=resdata.length, onswitch = 1, i=-1;
         while(resdata[++i]){
                 if (resdata[i][0]>mindate && resdata[i][0]<maxdate) {
                         if (onswitch == 0 && i!=0) {
-                            avg = avg + resdata[i-1][5]*(resdata[i][0]-mindate);
+                            sum = sum + resdata[i-1][5]*(resdata[i][0]-mindate);
                         } else {
                             if (i+1==len || resdata[i+1][5]>maxdate) {
-                                avg = avg + resdata[i][5]*(maxdate-resdata[i][0]);
+                                sum = sum + resdata[i][5]*(maxdate-resdata[i][0]);
                             } else {
-                                avg = avg + resdata[i][5]*(resdata[i+1][0]-resdata[i][0]);
+                                sum = sum + resdata[i][5]*(resdata[i+1][0]-resdata[i][0]);
                             }
                         }
                         if (resdata[i][2] == "Mint by stake")
@@ -123,11 +147,34 @@ function calcintrst(mindate,maxdate)
                         onswitch = 1;
                 }
         }
-	let interest=100*reward*1000*3600*24*365/avg
-	return[avg, reward, interest];
+	let avg = sum/(maxdate-mindate);
+	let interest=100*reward*oneyear/sum;
+	let rewardpercent = 100*reward*(maxdate-mindate)/sum;
+	return[avg, reward, interest, rewardpercent];
 }
 
-//Set the bar for Continuous Minting as earning 0.75% average interest before v0.9 and 4.125% after.
+function posreward(mindate,maxdate)
+{
+        var posdate = [], posreward = [], posdatediff = [], onswitch=0, i=-1;
+        while(resdata[++i]){
+                if (resdata[i][0]>mindate && resdata[i][0]<maxdate) {
+                        if (resdata[i][2] == "Mint by stake")
+                        {
+                                posdate[i] = resdata[i][4];
+				posreward[i] = parseFloat(resdata[i][1]);
+				if (onswitch == 1) {
+					posdatediff[i] = (posdate[i]-posdate[i-1])/oneday;
+				} else {
+					posdatediff[0] = 0;
+					onswitch = 1;
+				}
+                        }
+                }
+        }
+        return[posdate, posreward, posdatediff];
+}
+
+//Set the bar for Continuous Minting as earning 0.75% average interest before v0.9 and 3.75% after.
 function expavgint(min,max)
 {
 	var cnfbar = 0.75;
@@ -153,8 +200,8 @@ function datedata()
 	var mind = Date.parse(document.getElementById('windowstart').value);
 	var maxd = Date.parse(document.getElementById('windowend').value);
 	let avgint = calcintrst(mind,maxd);
-	var xint = [], yint = [];
-	document.getElementById('avg').innerHTML=avgint[0]/(maxd-mind);
+	var xint = [], yint2 = [], yint3 = [];
+	document.getElementById('avg').innerHTML=avgint[0];
 	document.getElementById('stake').innerHTML=avgint[1];
 	document.getElementById('interest').innerHTML=avgint[2];
 	if (avgint[2] > expavgint(mind,maxd)){
@@ -162,12 +209,24 @@ function datedata()
 	} else {
 		document.getElementById('prediction').innerHTML="You were a PERIODIC minter during this period";
 	}
-	for (let i=mind;i<maxd; i=i+1000*3600*24){
-		let calculate = calcintrst(i-1000*3600*24*365,i);
+	alert(oneyear);
+	for (let i=mind;i<maxd; i=i+oneday){
+		let annualized = calcintrst(i-oneyear,i);
 		let day = new Date(i);
 		xint.push(day);
-		yint.push(calculate[2]);
+		yint2.push(annualized[2]);
+		let cumint = calcintrst(mind,i);
+		yint3.push(cumint[3]);
 	}
-	plotdata(xint,yint,areatwo);
+	var xintpos = [], yint4 = [], yint5 = [];
+	graphreward = posreward(mind,maxd);
+	xintpos = graphreward[0];
+	yint4 = graphreward[1];
+	yint5 = graphreward[2];
+	plotdata(xint,yint2,areatwo);
+	plotdata(xint,yint3,areathree);
+	scatterplotdata(xintpos,yint4,areafour);
+	scatterplotdata(xintpos,yint5,areafive);
+	document.getElementById('datebtn').style.background='#008000';
 	alert("Date Window Processed and Graphed");
 }

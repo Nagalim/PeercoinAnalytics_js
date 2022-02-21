@@ -19,27 +19,27 @@
 					<br>
 					<span class="lead mb-4">Locate the file using 'Select .csv file', then click 'Import Data'.</span>
 					<div>
-						<label for="fileInput" class="custom-file-upload btn btn-primary btn-lg px-4 gap-3">Select .csv File</label>
+						<label id="selfilebtn" for="fileInput" class="custom-file-upload btn btn-primary btn-lg px-4 gap-3" style="background-color:red">Select .csv File</label>
 						<input id="fileInput" type="file"/>
 						<div id="filearea" class="filetext">file name...</div>
-						<button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="impdata()">Import Data</button>
+						<button id="impdatabtn" type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="impdata()">Import Data</button>
 					</div>	
 					<div>
 						<select id="addressarea">
 							<option value="All">All Addresses (imported by default)</option>
 						</select>
-						<button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="impaddr()">Select Address</button>
-					</div> 
+						<button id="impaddrbtn" type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="impaddr()">Select Address</button>
+					</div>
+					<span class="lead mb-4"> Analysis for Address: </span>
+                                        <span id="trgtaddr" class="lead mb-4"> Not loaded </span>
+					<br><br>
 					<label for="start">Start date:</label>
         	            		<input type="date" id="windowstart" name="windowstart" value="2012-08-19" min="2012-08-15"></input>
         	            		<label for="end">End date:</label>
         	            		<input type="date" id="windowend" name="windowend" value="2022-02-19" min="2012-08-15"></input>
 					<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-						<button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="datedata()">Process Date Window</button>
+						<button id="datebtn" type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="datedata()">Process Date Window</button>
 					</div>
-					<span class="lead mb-4"> Analysis for Address: </span>
-                                        <span id="trgtaddr" class="lead mb-4"> Not loaded </span>
-					<br>
 					<span class="lead mb-4"> Average Peercoin Balance: </span>
 					<span id="avg" class="lead mb-4"> # PPC </span>
 					<br>
@@ -58,6 +58,13 @@
 			<div id="areaone" class="graph"></div><br>
 			<h3>Graph of Annualized Interest Over Date Window</h3>
 			<div id="areatwo" class="graph"></div>
+			<h3>Percentage of Balance that was Minted</h3>
+                        <div id="areathree" class="graph"></div>
+			<h3>Scatter Plot of Mint Reward</h3>
+                        <div id="areafour" class="graph"></div>
+			<h3>Average Time Between Mints (days)</h3>
+                        <div id="areafive" class="graph"></div>
+
 		</div>
 		<script src="script.js"></script>
 	</body>
