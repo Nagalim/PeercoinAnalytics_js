@@ -30,32 +30,55 @@ function impdata()
 }
 
 //Make plotting easier through Plotly
-function plotdata(eggs, why, grapharea)
+function plotdata(eggs, why, grapharea, mode, ylabel)
 {
     	var trace = {
         	x: eggs,
         	y: why,
-        	mode: 'lines+markers',
+        	mode: mode,
         	type: 'scatter'
     	};
     	var data = [trace];
-    	try{Plotly.newPlot(grapharea, data);}
+	document.getElementById(grapharea).innerHTML='';
+    	try{Plotly.newPlot(grapharea, data, {yaxis:{title:{text: ylabel}}});}
     	catch(err){Alert(err)};
 }
 
-function scatterplotdata(eggs, why, grapharea)
-{
-        var trace = {
-                x: eggs,
-                y: why,
-                mode: 'markers',
-                type: 'scatter'
-        };
-        var data = [trace];
-        try{Plotly.newPlot(grapharea, data);}
-        catch(err){Alert(err)};
+/*
+function plotlayout(ptitle, xlabel, ylabel)
+{      
+	var layout = {
+		title: {
+			text: 'Title',
+                        font: {
+				family: 'Times New Roman',
+                                size: 24
+			}
+		},
+		xaxis: {
+                        title: {
+                                text: xlabel,
+                                font: {
+                                        family: 'Courier New, monospace',
+                                        size: 18,
+                                        color: '#7f7f7f'
+                                }
+                        }
+                },
+                yaxis: {
+                        title: {
+                                text: ylabel,
+                                font: {
+                                        family: 'Courier New, monospace',
+                                        size: 18,
+                                        color: '#7f7f7f'
+                                }
+                        }
+                }
+	};
+        return[layout];
 }
-
+*/
 
 //Process the data.  This will recreate the resdata.
 //resdata = [date, amount, txntag, address, readable date, balance]
@@ -91,7 +114,7 @@ function procdata(targetaddr = "All")
         	txnamount.push(AmtTot);
     	}
 	//Plot and date ranges
-	plotdata(txndate,txnamount,areaone);
+	plotdata(txndate,txnamount,'areaone','lines+markers','Balance (# Coins)');
 	document.getElementById('windowstart').value=resdata[0][4].toISOString().substring(0,10);
 	endindex = resdata.length-1;
 	document.getElementById('windowend').value=resdata[endindex][4].toISOString().substring(0,10);
@@ -217,15 +240,16 @@ function datedata()
 		let cumint = calcintrst(mind,i);
 		yint3.push(cumint[3]);
 	}
+	//plots 4 and 5 (mint events)
 	var xintpos = [], yint4 = [], yint5 = [];
 	graphreward = posreward(mind,maxd);
 	xintpos = graphreward[0];
 	yint4 = graphreward[1];
 	yint5 = graphreward[2];
-	plotdata(xint,yint2,areatwo);
-	plotdata(xint,yint3,areathree);
-	scatterplotdata(xintpos,yint4,areafour);
-	scatterplotdata(xintpos,yint5,areafive);
+	plotdata(xint,yint2,'areatwo','lines+markers','Annualized Interest (%)');
+	plotdata(xint,yint3,'areathree','lines+markers','Percentage of Balance Minted (%)');
+	plotdata(xintpos,yint4,'areafour','markers','Mint Reward (# Coins)');
+	plotdata(xintpos,yint5,'areafive','markers','Time Between Mint Events (Days)');
 	document.getElementById('datebtn').style.background='#008000';
 	alert("Date Window Processed and Graphed");
 }
