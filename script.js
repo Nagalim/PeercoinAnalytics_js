@@ -151,17 +151,17 @@ function impaddr()
 //Calculate average balance, stake minted, annualized interest over date window, and total reward as percentage of balance.
 function calcintrst(mindate,maxdate)
 {
-	var sum = 0, reward = 0, len=resdata.length, onswitch = 1, i=-1;
+	var sum = 0, reward = 0, len=resdata.length, onswitch = 0, i=-1;
         while(resdata[++i]){
                 if (resdata[i][0]>mindate && resdata[i][0]<maxdate) {
-                        if (onswitch == 0 && i!=0) {
-                            sum = sum + resdata[i-1][5]*(resdata[i][0]-mindate);
+			if (onswitch == 0 && i!=0) {
+				sum = sum + resdata[i-1][5]*(resdata[i][0]-mindate);
                         } else {
-                            if (i+1==len || resdata[i+1][5]>maxdate) {
-                                sum = sum + resdata[i][5]*(maxdate-resdata[i][0]);
-                            } else {
-                                sum = sum + resdata[i][5]*(resdata[i+1][0]-resdata[i][0]);
-                            }
+                            	if (i+1==len || resdata[i+1][5]>maxdate) {
+                                	sum = sum + resdata[i][5]*(maxdate-resdata[i][0]);
+                        	} else {
+                                	sum = sum + resdata[i][5]*(resdata[i+1][0]-resdata[i][0]);
+                        	}
                         }
                         if (resdata[i][2] == "Mint by stake")
                         {
@@ -178,18 +178,18 @@ function calcintrst(mindate,maxdate)
 
 function posreward(mindate,maxdate)
 {
-        var posdate = [], posreward = [], posdatediff = [], onswitch=0, i=-1;
+        var posdate = [], posreward = [], posdatediff = [], k=-1, i=-1;
         while(resdata[++i]){
                 if (resdata[i][0]>mindate && resdata[i][0]<maxdate) {
                         if (resdata[i][2] == "Mint by stake")
                         {
-                                posdate[i] = resdata[i][4];
-				posreward[i] = parseFloat(resdata[i][1]);
-				if (onswitch == 1) {
-					posdatediff[i] = (posdate[i]-posdate[i-1])/oneday;
+				k=k+1;
+				posdate.push(resdata[i][4]);
+				posreward.push(parseFloat(resdata[i][1]));
+				if (k > 0) {
+					posdatediff.push((posdate[k]-posdate[k-1])/oneday);
 				} else {
 					posdatediff[0] = 0;
-					onswitch = 1;
 				}
                         }
                 }
