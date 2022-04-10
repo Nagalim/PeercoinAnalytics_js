@@ -44,64 +44,26 @@ function plotdata(eggs, why, grapharea, mode, ylabel)
     	catch(err){Alert(err)};
 }
 
-/*
-function plotlayout(ptitle, xlabel, ylabel)
-{      
-	var layout = {
-		title: {
-			text: 'Title',
-                        font: {
-				family: 'Times New Roman',
-                                size: 24
-			}
-		},
-		xaxis: {
-                        title: {
-                                text: xlabel,
-                                font: {
-                                        family: 'Courier New, monospace',
-                                        size: 18,
-                                        color: '#7f7f7f'
-                                }
-                        }
-                },
-                yaxis: {
-                        title: {
-                                text: ylabel,
-                                font: {
-                                        family: 'Courier New, monospace',
-                                        size: 18,
-                                        color: '#7f7f7f'
-                                }
-                        }
-                }
-	};
-        return[layout];
-}
-*/
-
 //Process the data.  This will recreate the resdata.
 //resdata = [date, amount, txntag, address, readable date, balance]
 //It also feeds the wallet [date,balance] out to the plotter
-function procdata(targetaddr = "All")
+function procdata()
 {
 	resdata = [];
 	var txndate = [], txnamount = [];
 	var rows = rawdata.split("\n");
-    	var dated = [], amnt = [], tag = [], addr = [];
-    	for (var i=1;i<rows.length-1;i++){
-        	let thisrow = rows[i].split('","');
-        	let dating = Date.parse(thisrow[1]);
+    	var dated = [], amnt = [], tag = [], txid = [];
+    	for (var i=2;i<rows.length;i++){
+		let thisrow = rows[i].split(';');
+        	let dating = Date.parse(thisrow[2]);
         	dated.push(dating);
-        	amnt.push(thisrow[5]);
-		tag.push(thisrow[2]);
-		addr.push(thisrow[4]);
+        	amnt.push(thisrow[4]);
+		tag.push(thisrow[3]);
+		txid.push(thisrow[0]);
     	}
 	var j = -1, k = -1, AmtTot = 0;
     	while(dated[++j]){
-		if (targetaddr==addr[j] || targetaddr=="All"){
-			resdata.push([dated[j],amnt[j],tag[j],addr[j]]);
-    		}
+		resdata.push([dated[j],amnt[j],tag[j],txid[j]]);
 	}
 	resdata.sort(function(a,b) {return a[0]-b[0]});
 	while(resdata[++k]){
@@ -119,36 +81,8 @@ function procdata(targetaddr = "All")
 	endindex = resdata.length-1;
 	document.getElementById('windowend').value=resdata[endindex][4].toISOString().substring(0,10);
 	//Setup address select if unpopulated
-	popaddr=document.getElementById('addressarea').length;
-	if (popaddr == 1){
-		var select = document.getElementById('addressarea'), usedaddr = [];
-		var ii=-1; jj=-1;
-		while(addr[++jj]){
-			if (!(usedaddr.includes(addr[jj]))){
-				usedaddr.push(addr[jj]);
-			}
-		}
-		while(usedaddr[++ii]){
-			var address = usedaddr[ii];
-			var addresses = document.createElement("option");
-			addresses.textContent = address;
-			addresses.value = address;
-			select.appendChild(addresses);
-		}
-	}
-	document.getElementById('trgtaddr').innerHTML=targetaddr;
-	if (targetaddr!='All'){
-		document.getElementById('addrwarn').innerHTML="Warning: individual addresses in .csv misrepresent send transactions";
-	}
+	
 	alert("Processed and Graphed");
-}
-
-function impaddr()
-{
-	selectaddr = document.getElementById('addressarea').value;
-	document.getElementById('impaddrbtn').style.background='#008000';
-        document.getElementById('datebtn').style.background='#FF0000';
-	procdata(selectaddr);
 }
 
 //Calculate average balance, stake minted, annualized interest over date window, and total reward as percentage of balance.
@@ -166,7 +100,7 @@ function calcintrst(mindate,maxdate)
                                 	sum = sum + resdata[i][5]*(resdata[i+1][0]-resdata[i][0]);
                         	}
                         }
-                        if (resdata[i][2] == "Mint by stake")
+                        if (resdata[i][2] == "Stake")
                         {
                                 reward = reward + parseFloat(resdata[i][1]);
                         }
@@ -184,7 +118,7 @@ function posreward(mindate,maxdate)
         var posdate = [], posreward = [], posdatediff = [], k=-1, i=-1;
         while(resdata[++i]){
                 if (resdata[i][0]>mindate && resdata[i][0]<maxdate) {
-                        if (resdata[i][2] == "Mint by stake")
+                        if (resdata[i][2] == "Stake")
                         {
 				k=k+1;
 				posdate.push(resdata[i][4]);
