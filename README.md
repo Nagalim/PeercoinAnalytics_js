@@ -1,7 +1,6 @@
-# 1.1.0
+# 1.2.0
 
-- Interest Calculations
-- More Graphs
-- Address Selection
+- Different html and script files for each feature
+- import from csv or API
 
 # PeercoinAnalytics_js
